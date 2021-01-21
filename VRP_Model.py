@@ -9,8 +9,8 @@ def objcoeff(matrix):
                 s += matrix[i][j]
             k += s
         return k
-class Model:
 
+class Model:
 # instance variables
     def __init__(self):
         self.allNodes = []
@@ -19,20 +19,18 @@ class Model:
         self.capacity = -1
 
 # Objective coefficient
-    
 
-
-    def BuildModel(self):
-        random.seed(1)
-        depot = Node(0, 15, 0, 50, 50)
+    def BuildModel(self, seed):  # FIXME Added seed argument for testing purposes. Change back.
+        random.seed(seed)  # FIXME
+        depot = Node(0, 0, 0, 50, 50)  # FIXED -- 0 service_time instead of 15
         self.allNodes.append(depot)
         self.capacity = 50
         totalCustomers = 100
         for i in range (0, totalCustomers):
             x = random.randint(0, 100)
             y = random.randint(0, 100)
-            dem = random.randint(1, 1500)
-            cust = Node(i + 1, 15, dem, x, y)
+            dem = random.randint(1, 150)  # FIXED -- 1-150 instead of 1-1500
+            cust = Node(i + 1, 0.25, dem, x, y)  # FIXED -- 0.25 of an hour instead of 15 minutes. If time in minutes is needed, also change maxHours to maxMinutes in Solver.NaiveConstructive
             self.allNodes.append(cust)
             self.customers.append(cust)
 

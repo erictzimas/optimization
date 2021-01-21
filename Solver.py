@@ -137,6 +137,122 @@ class Solver:
         if (modelIsFeasible == False):
             print('FeasibilityIssue')
             #reportSolution
+    # Add the below function to Solver Class
+# Using as in Main.py
+
+    def NaiveConstructive(self, m: Model):
+        # Creates a naive constructive solution for a Model m.
+        # Assigns to every truck the nearest customers available
+        # until it reaches its time or capacity limit
+
+        solution = []
+        usedNodes = []
+        usedNodes.append(0)  # append stockhouse to avoid unwanted usage
+        allTrucks = 30
+        largeTrucks = 15
+        smallCapacity = 1200
+        largeCapacity = 1500
+        maxHours = 3.5  # Should it be in minutes?
+
+        for i in range(0, allTrucks):
+            if i in range(0, largeTrucks):
+                capacity = largeCapacity  # large trucks first to deliver more orders to the near customers
+            else:
+                capacity = smallCapacity
+
+            timeSpent = 0
+            cap = 0
+            curID = 0
+            tempSol = []
+
+            while 1:
+                nextNode = self.findNearestNode(m, usedNodes, curID)
+                if nextNode is None:
+                    break
+                cap += nextNode.demand
+                timeSpent += m.matrix[curID][nextNode.id] / 35
+                timeSpent += nextNode.service_time
+
+                if timeSpent <= maxHours and cap <= capacity:
+                    curID = nextNode.id
+                    usedNodes.append(nextNode.id)
+                    tempSol.append(nextNode.id)
+                else:
+                    break
+            solution.append(tempSol)
+
+        return solution
+
+
+    def findNearestNode(self, m: Model, usedNodes, curID):
+        # Helper Function for NaiveConstructive
+        # Receives a Model m, an array of usedNodes and the ID of a node
+        # and returns the nearest unused node to it
+        minDistanceNode = self.findNode(m.allNodes, 0)
+        minDistance = 10 ** 9
+        for node in m.customers:
+            if m.matrix[curID][node.id] < minDistance and node.id not in usedNodes:
+                minDistance = m.matrix[curID][node.id]
+                minDistanceNode = node
+
+        if minDistanceNode.id != 0:
+            return self.findNode(m.allNodes, minDistanceNode.id)
+        else:
+            return None
+
+
+    def findNode(self, allNodes, id):
+        # Helper Function for NaiveConstructive
+        # Receives a node's ID as input and return the node itself
+        for nd in allNodes:
+            if nd.id == id:
+                return nd
+
+        return None
+
+
+    def NCCheckDuplicates(self, arr):
+        # Validation function for NaiveConstructive
+        # Checks if any customer have been serviced more than one time
+        # Should return True
+        check = []
+        for item in arr:
+            for i in item:
+                if i in check:
+                    return False
+                else:
+                    check.append(i)
+        return True
+
+
+    def NCAllCustServiced(self, arr):
+        # Validation function for NaiveConstructive
+        # Checks if every customer was served
+        # Should return True
+        check = []
+        for i in range(1, 101):
+            check.append(i)
+        for item in arr:
+            for i in item:
+                if i in check:
+                    check.remove(i)
+                else:
+                    return False
+        if len(check) == 0:
+            return True
+        else:
+            return False
+
+
+    def NCCountCustomersServiced(self, arr):
+        # Validation function for NaiveConstructive
+        # Counts how many customers successfully serviced
+        # Should return 100
+        count = 0
+        for item in arr:
+            for _ in item:
+                count += 1
+        return count
 
     def MinimumInsertions(self, itr = 0):
         modelIsFeasible = True
